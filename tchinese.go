@@ -5,38 +5,41 @@ import (
 	"strings"
 )
 
+// TraditionalChineseFloat returns kansuji of a `float64` in traditional Chinese style.
+//
+// `prec` has the same meaning of `strconv.FormatFloat`.
 func TraditionalChineseFloat(in float64, prec int) string {
 	var sb strings.Builder
 
 	isNegative := in < 0
 	if isNegative {
 		in = -in
-		sb.WriteRune(negative()[0])
+		sb.WriteRune(negative[0])
 	}
 
 	str := strconv.FormatFloat(in, 'f', prec, 64)
-	str = strings.Trim(str, "0")
 	strParts := strings.Split(str, ".")
 
 	sb.WriteString(traditionalChineseStringInt(strParts[0]))
 
 	if len(strParts) > 1 && strParts[1] != "" {
-		sb.WriteRune(point()[0])
+		sb.WriteRune(point[0])
 		for i := 0; i < len(strParts[1]); i++ {
-			sb.WriteRune(chars()[strParts[1][i]])
+			sb.WriteRune(numbers[strParts[1][i]-'0'])
 		}
 	}
 
 	return sb.String()
 }
 
+// TraditionalChineseInt returns kansuji of a `int64` in traditional Chinese style.
 func TraditionalChineseInt(in int64) string {
 	var sb strings.Builder
 
 	isNegative := in < 0
 	if isNegative {
 		in = -in
-		sb.WriteRune(negative()[0])
+		sb.WriteRune(negative[0])
 	}
 
 	str := strconv.FormatInt(in, 10)
@@ -45,6 +48,7 @@ func TraditionalChineseInt(in int64) string {
 	return sb.String()
 }
 
+// TraditionalChineseUint returns kansuji of a `uint64` in traditional Chinese style.
 func TraditionalChineseUint(in uint64) string {
 	var sb strings.Builder
 
@@ -54,38 +58,41 @@ func TraditionalChineseUint(in uint64) string {
 	return sb.String()
 }
 
+// TraditionalChineseFinancialFloat returns kansuji of a `float64` in traditional Chinese financial style.
+//
+// `prec` has the same meaning of `strconv.FormatFloat`.
 func TraditionalChineseFinancialFloat(in float64, prec int) string {
 	var sb strings.Builder
 
 	isNegative := in < 0
 	if isNegative {
 		in = -in
-		sb.WriteRune(negative()[0])
+		sb.WriteRune(negative[0])
 	}
 
 	str := strconv.FormatFloat(in, 'f', prec, 64)
-	str = strings.Trim(str, "0")
 	strParts := strings.Split(str, ".")
 
 	sb.WriteString(traditionalChineseStringFinancialInt(strParts[0]))
 
 	if len(strParts) > 1 && strParts[1] != "" {
-		sb.WriteRune(point()[0])
+		sb.WriteRune(point[0])
 		for i := 0; i < len(strParts[1]); i++ {
-			sb.WriteRune(upperChars()[strParts[1][i]][0])
+			sb.WriteRune(financialNumbers[strParts[1][i]][0])
 		}
 	}
 
 	return sb.String()
 }
 
+// TraditionalChineseFinancialInt returns kansuji of a `int64` in traditional Chinese financial style.
 func TraditionalChineseFinancialInt(in int64) string {
 	var sb strings.Builder
 
 	isNegative := in < 0
 	if isNegative {
 		in = -in
-		sb.WriteRune(negative()[0])
+		sb.WriteRune(negative[0])
 	}
 
 	str := strconv.FormatInt(in, 10)
@@ -94,6 +101,7 @@ func TraditionalChineseFinancialInt(in int64) string {
 	return sb.String()
 }
 
+// TraditionalChineseFinancialUint returns kansuji of a `uint64` in traditional Chinese financial style.
 func TraditionalChineseFinancialUint(in uint64) string {
 	var sb strings.Builder
 
@@ -111,7 +119,7 @@ func traditionalChineseStringInt(in string) string {
 	var integer [12]group
 	var i, g, b int
 	for i, g, b = len(in)-1, 0, 0; i >= 0; i-- {
-		integer[g][b] = chars()[in[i]]
+		integer[g][b] = numbers[in[i]-'0']
 		b++
 		if b == 4 {
 			g++
@@ -126,10 +134,10 @@ func traditionalChineseStringInt(in string) string {
 	var sb strings.Builder
 
 	allzeros := true
-	if b == 2 && integer[g][1] == chars()['1'] {
+	if b == 2 && integer[g][1] == numbers[1] {
 		b--
 		if b > 0 {
-			sb.WriteRune(multipliers()[b-1])
+			sb.WriteRune(multipliers[b-1])
 		}
 		allzeros = false
 	}
@@ -139,7 +147,7 @@ func traditionalChineseStringInt(in string) string {
 		g--
 		b = 3
 	}
-	for ; integer[g][b] == chars()['0']; b-- {
+	for ; integer[g][b] == numbers[0]; b-- {
 		if b == 0 {
 			break
 		}
@@ -150,11 +158,11 @@ func traditionalChineseStringInt(in string) string {
 	}
 	for ; g >= 0; g-- {
 		for ; b >= 0; b-- {
-			if integer[g][b] == chars()['0'] {
+			if integer[g][b] == numbers[0] {
 				if b == 0 {
 					break
 				}
-				if integer[g][b-1] == chars()['0'] {
+				if integer[g][b-1] == numbers[0] {
 					continue
 				}
 				sb.WriteRune(integer[g][b])
@@ -163,12 +171,12 @@ func traditionalChineseStringInt(in string) string {
 			allzeros = false
 			sb.WriteRune(integer[g][b])
 			if b > 0 {
-				sb.WriteRune(multipliers()[b-1])
+				sb.WriteRune(multipliers[b-1])
 			}
 		}
 		b = 3
-		if r := multipliersAgain()[g]; r != nil && !allzeros {
-			sb.WriteRune(r[0])
+		if g > 0 && !allzeros {
+			sb.WriteRune(multipliers2[g-1][0])
 		}
 
 		allzeros = true
@@ -185,7 +193,7 @@ func traditionalChineseStringFinancialInt(in string) string {
 	var integer [12]group
 	var i, g, b int
 	for i, g, b = len(in)-1, 0, 0; i >= 0; i-- {
-		integer[g][b] = upperChars()[in[i]][0]
+		integer[g][b] = financialNumbers[in[i]-'0'][0]
 		b++
 		if b == 4 {
 			g++
@@ -200,10 +208,10 @@ func traditionalChineseStringFinancialInt(in string) string {
 	var sb strings.Builder
 
 	allzeros := true
-	if b == 2 && integer[g][1] == upperChars()['1'][0] {
+	if b == 2 && integer[g][1] == financialNumbers[1][0] {
 		b--
 		if b > 0 {
-			sb.WriteRune(upperMultipliers()[b-1][0])
+			sb.WriteRune(financialMultipliers[b-1][0])
 		}
 		allzeros = false
 	}
@@ -213,7 +221,7 @@ func traditionalChineseStringFinancialInt(in string) string {
 		g--
 		b = 3
 	}
-	for ; integer[g][b] == chars()['0']; b-- {
+	for ; integer[g][b] == numbers[0]; b-- {
 		if b == 0 {
 			break
 		}
@@ -224,11 +232,11 @@ func traditionalChineseStringFinancialInt(in string) string {
 	}
 	for ; g >= 0; g-- {
 		for ; b >= 0; b-- {
-			if integer[g][b] == chars()['0'] {
+			if integer[g][b] == numbers[0] {
 				if b == 0 {
 					break
 				}
-				if integer[g][b-1] == chars()['0'] {
+				if integer[g][b-1] == numbers[0] {
 					continue
 				}
 				sb.WriteRune(integer[g][b])
@@ -237,12 +245,12 @@ func traditionalChineseStringFinancialInt(in string) string {
 			allzeros = false
 			sb.WriteRune(integer[g][b])
 			if b > 0 {
-				sb.WriteRune(upperMultipliers()[b-1][0])
+				sb.WriteRune(financialMultipliers[b-1][0])
 			}
 		}
 		b = 3
-		if r := multipliersAgain()[g]; r != nil && !allzeros {
-			sb.WriteRune(r[0])
+		if g > 0 && !allzeros {
+			sb.WriteRune(multipliers2[g-1][0])
 		}
 
 		allzeros = true

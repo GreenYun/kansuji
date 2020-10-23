@@ -2,10 +2,13 @@ package kansuji
 
 import "strings"
 
+// ToHongKongStandard converts the financial number three into the common form
+// found in Hong Kong.
 func ToHongKongStandard(in string) string {
 	return strings.ReplaceAll(in, "參", "叄")
 }
 
+// ToCantoneseVariant converts to oral Cantonese form of twenty, thirty and forty.
 func ToCantoneseVariant(in string) string {
 	s := strings.ReplaceAll(in, "貳拾", "廿")
 	s = strings.ReplaceAll(s, "贰拾", "廿")
@@ -23,6 +26,9 @@ func ToCantoneseVariant(in string) string {
 	return s
 }
 
+// ToJapaneseLaw converts four financial numbers defined in Japanese laws.
+//
+// See https://ja.wikipedia.org/wiki/%E5%A4%A7%E5%AD%97_(%E6%95%B0%E5%AD%97)
 func ToJapaneseLaw(in string) string {
 	s := strings.ReplaceAll(in, "一", "壱")
 	s = strings.ReplaceAll(s, "二", "弐")
